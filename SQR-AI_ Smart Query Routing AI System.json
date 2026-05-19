@@ -1,0 +1,864 @@
+{
+  "name": "SQR-AI: Smart Query Routing AI System",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1gHoA9ljmDryF8X4aYj1w0BHTPeGb84h3nlWp5NXGzlg",
+          "mode": "list",
+          "cachedResultName": "Untitled form (Responses)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1gHoA9ljmDryF8X4aYj1w0BHTPeGb84h3nlWp5NXGzlg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 741285121,
+          "mode": "list",
+          "cachedResultName": "Form Responses 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1gHoA9ljmDryF8X4aYj1w0BHTPeGb84h3nlWp5NXGzlg/edit#gid=741285121"
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "9ffc9e8e-e520-455e-849a-0c21111048d1",
+      "name": "Google Sheets Trigger",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "Rr46N9S1tKw0TqJ5",
+          "name": "Google Sheets Trigger account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "llama-3.1-8b-instant",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        144,
+        208
+      ],
+      "id": "dc33cc53-f492-4799-986c-9c78d0561807",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "uhcLjZjc5hNaJsEy",
+          "name": "Groq account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an urgency detection AI.\n\nAnalyze the student's query.\n\nIf the query is about:\n- access issues\n- login problems\n- payment failures\n- urgent deadlines\n- system not working\n- blocked access\n- LMS issues\n- quiz issues\n\nReturn:\nurgent\n\nOtherwise return:\nnormal\n\nReturn ONLY one word.\n\nStudent Query:\n{{$json[\"Query\"]}}",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        208,
+        0
+      ],
+      "id": "911149ab-d54c-47a1-b98b-8a3b395d9ce9",
+      "name": "Urgency Detection LLM"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an AI-powered student query classification system.\n\nYour task is to classify the student's query into EXACTLY ONE category from the available categories below.\n\nAvailable Categories:\n- Technical Doubt\n- WiFi Issue\n- Certification\n- NASSCOM\n- Batch Change\n- Teaching Methodology\n- LMS Access\n- Discord Access\n- Payment Issue\n- Room Allocation\n- Placement\n- Resume Review\n- Revoke Access\n- Live Class Access\n- Quiz Related\n- Recording Video Access\n- Assignments\n- Tasks\n\nInstructions:\n- Return ONLY the category name\n- Do not explain anything\n- Do not return sentences\n- Do not return JSON\n- Output must exactly match one category from the list\n\nStudent Query:\n{{$node[\"Google Sheets Trigger\"].json[\"Query\"]}}",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        560,
+        0
+      ],
+      "id": "9db4ba8c-cab5-4e3e-8b43-2c36f48fc70d",
+      "name": "Department classification LLM"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.1-8b-instant",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        496,
+        208
+      ],
+      "id": "f70a9614-48a3-44f9-afbf-a6ea2a17b96a",
+      "name": "Groq Chat Model1",
+      "credentials": {
+        "groqApi": {
+          "id": "uhcLjZjc5hNaJsEy",
+          "name": "Groq account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "{{$json[\"text\"]}}",
+                    "rightValue": "LMS Access",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "0d48f512-8057-4f59-b61e-e3b9aa514990"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "6d9f980b-02bb-409f-bab8-b33a71e823f6",
+                    "leftValue": "{{$json[\"text\"]}}",
+                    "rightValue": "Payment Issue",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "8fc28a87-526c-46e5-bac0-873f7d9cf8b4",
+                    "leftValue": "{{$json[\"text\"]}}",
+                    "rightValue": "Placement",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "83c01524-c29e-44c5-8cc8-72adb59a8039",
+                    "leftValue": "{{$json[\"text\"]}}",
+                    "rightValue": "Technical Doubt",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "41811b56-43e2-41d0-8294-f74e4aa39207",
+                    "leftValue": "{{$json[\"text\"]}}",
+                    "rightValue": "Assignments",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "47047f06-32ce-41cf-9f6f-3b5207aa2b39",
+                    "leftValue": "{{$json[\"text\"]}}",
+                    "rightValue": "Tasks",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "a9c0fffe-ab4d-4a41-a01d-295a8cd01b73",
+                    "leftValue": "{{$json[\"text\"]}}",
+                    "rightValue": "Certification",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "064608d5-86ee-4d6e-babc-24724e9e4b7d",
+                    "leftValue": "={{$json[\"text\"]}}",
+                    "rightValue": "Quiz Related",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        912,
+        0
+      ],
+      "id": "c1ee41a6-b1e9-43b8-bb43-3cb4c20e3366",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "sendTo": "lms_support@gmail.com",
+        "subject": "={{$node[\"Urgency Detection LLM\"].json[\"text\"]}} Query - LMS Access ({{$node[\"Google Sheets Trigger\"].json[\"Branch\"]}})",
+        "message": "=<p>Dear LMS Support Team,</p>  <p>A new LMS-related student query has been received.</p>  <p> <b>Name:</b> {{$node[\"Google Sheets Trigger\"].json[\"Student Name\"]}}<br> <b>Enrollment ID:</b> {{$node[\"Google Sheets Trigger\"].json[\"Enrollment ID\"]}}<br> <b>Batch No:</b> {{$node[\"Google Sheets Trigger\"].json[\"Batch no\"]}}<br> <b>Branch:</b> {{$node[\"Google Sheets Trigger\"].json[\"Branch\"]}}<br> <b>Sentiment:</b> {{$node[\"Urgency Detection LLM\"].json[\"text\"]}} </p>  <p><b>Query:</b><br> {{$node[\"Google Sheets Trigger\"].json[\"Query\"]}} </p>  <p>Please resolve this issue at the earliest.</p>  <p>Thank You,<br> Innomatics Query Routing System</p>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1120,
+        -176
+      ],
+      "id": "a4d5dcc0-0750-485b-a1cb-4354e8dfb689",
+      "name": "LMS Mail",
+      "webhookId": "892614e8-cee8-4a6a-84a7-3b315d8353a8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "skD4BvaR73UnzPjA",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "faizansayeed97@gmail.com",
+        "subject": "={{$node[\"Urgency Detection LLM\"].json[\"text\"]}} Query - Payment Issue ({{$node[\"Google Sheets Trigger\"].json[\"Branch\"]}})",
+        "message": "=<p>Dear Accounts Department,</p>  <p>A payment-related query has been received.</p>  <p> <b>Name:</b> {{$node[\"Google Sheets Trigger\"].json[\"Student Name\"]}}<br> <b>Enrollment ID:</b> {{$node[\"Google Sheets Trigger\"].json[\"Enrollment ID\"]}}<br> <b>Branch:</b> {{$node[\"Google Sheets Trigger\"].json[\"Branch\"]}} </p>  <p><b>Query:</b><br> {{$node[\"Google Sheets Trigger\"].json[\"Query\"]}} </p>  <p>Please verify and resolve the issue.</p>  <p>Thank You,<br> Innomatics Query Routing System</p>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1120,
+        -48
+      ],
+      "id": "b0bb3864-0a8f-48d6-bedc-e83071dc6cd6",
+      "name": "Payment Mail",
+      "webhookId": "2abfbfdf-0a90-47bb-b99b-febad3d65fa5",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "skD4BvaR73UnzPjA",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "faizansayeed97@gmail.com",
+        "subject": "={{$node[\"Urgency Detection LLM\"].json[\"text\"]}} Query - Placement ({{$node[\"Google Sheets Trigger\"].json[\"Branch\"]}})",
+        "message": "=<p>Dear Placement Team,</p>  <p>A placement-related student query has been received.</p>  <p> <b>Name:</b> {{$node[\"Google Sheets Trigger\"].json[\"Student Name\"]}}<br> <b>Enrollment ID:</b> {{$node[\"Google Sheets Trigger\"].json[\"Enrollment ID\"]}}<br> <b>Branch:</b> {{$node[\"Google Sheets Trigger\"].json[\"Branch\"]}} </p>  <p><b>Query:</b><br> {{$node[\"Google Sheets Trigger\"].json[\"Query\"]}} </p>  <p>Please assist the student.</p>  <p>Thank You,<br> Innomatics Query Routing System</p>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1120,
+        112
+      ],
+      "id": "91cec31b-f561-4d91-bba8-a06f6a70824d",
+      "name": "Placement Mail",
+      "webhookId": "6d51f622-1b37-4618-b692-26922273cec3",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "skD4BvaR73UnzPjA",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "faizansayeed97@gmail.com",
+        "subject": "={{$node[\"Urgency Detection LLM\"].json[\"text\"]}} Query - Certification ({{$node[\"Google Sheets Trigger\"].json[\"Branch\"]}})",
+        "message": "=<p>Dear Administration Team,</p>  <p>A certification-related query has been received.</p>  <p> <b>Name:</b> {{$node[\"Google Sheets Trigger\"].json[\"Student Name\"]}}<br> <b>Enrollment ID:</b> {{$node[\"Google Sheets Trigger\"].json[\"Enrollment ID\"]}}<br> <b>Branch:</b> {{$node[\"Google Sheets Trigger\"].json[\"Branch\"]}} </p>  <p><b>Query:</b><br> {{$node[\"Google Sheets Trigger\"].json[\"Query\"]}} </p>  <p>Please look into the request.</p>  <p>Thank You,<br> Innomatics Query Routing System</p>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1120,
+        272
+      ],
+      "id": "fb8927ab-e4fd-4baf-b6c3-1bfc7cd287e3",
+      "name": "Certification Mail",
+      "webhookId": "9b717fc2-68d7-4e06-b30a-1d33fa3b0e3c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "skD4BvaR73UnzPjA",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "faizansayeed97@gmail.com",
+        "subject": "={{$node[\"Urgency Detection LLM\"].json[\"text\"]}} Query - {{$node[\"Department classification LLM\"].json[\"text\"]}} ({{$node[\"Google Sheets Trigger\"].json[\"Branch\"]}})",
+        "message": "=Dear Department Head,  A new student query has been received.  Name: {{$node[\"Google Sheets Trigger\"].json[\"Student Name\"]}}  Enrollment ID: {{$node[\"Google Sheets Trigger\"].json[\"Enrollment ID\"]}}  Branch: {{$node[\"Google Sheets Trigger\"].json[\"Branch\"]}}  Batch No: {{$node[\"Google Sheets Trigger\"].json[\"Batch no\"]}}  Sentiment: {{$node[\"Urgency Detection LLM\"].json[\"text\"]}}  Category: {{$node[\"Department classification LLM\"].json[\"text\"]}}  Query: {{$node[\"Google Sheets Trigger\"].json[\"Query\"]}}  Please look into this issue at the earliest.  Thank You, Innomatics Query Routing System",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1120,
+        448
+      ],
+      "id": "5f248bfb-bded-4e2f-b2b6-0f6e79b064a5",
+      "name": "Recordings Mail",
+      "webhookId": "cc1069c5-1624-4e4e-8e4b-03ae2ee5f425",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "skD4BvaR73UnzPjA",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "73888adc-63b9-4031-a1b5-749cd99e4a0b",
+              "name": "Ticket_status",
+              "value": "RESOLVED",
+              "type": "string"
+            },
+            {
+              "id": "cbb59f09-7519-4fce-9f0c-0aab9f56ba37",
+              "name": "resolved_by",
+              "value": "lms_support@innomatics.in",
+              "type": "string"
+            },
+            {
+              "id": "d2bd9f0a-d9cf-47d4-a941-c43c301683a3",
+              "name": "resolved_time",
+              "value": "={{$now}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1328,
+        -176
+      ],
+      "id": "962a075c-007b-43a1-9213-729c73c292e9",
+      "name": "LMS_Resolution_Details"
+    },
+    {
+      "parameters": {
+        "sendTo": "faizansayeed97@gmail.com",
+        "subject": "=Query Resolved - LMS Access - {{$node[\"Google Sheets Trigger\"].json[\"Student Name\"]}}",
+        "message": "=<p>Dear {{$node[\"Google Sheets Trigger\"].json[\"Student Name\"]}},</p>  <p>Your LMS-related query has been marked as resolved.</p>  <p> <b>Status:</b> RESOLVED<br> <b>Resolved By:</b> lms_support@innomatics.in<br> <b>Resolved Time:</b> {{$now}}<br> <b>Category:</b> LMS Access<br> <b>Priority:</b> {{$node[\"Urgency Detection LLM\"].json[\"text\"]}} </p>  <p><b>Your Query:</b><br> {{$node[\"Google Sheets Trigger\"].json[\"Query\"]}} </p>  <p>If the issue still persists, please raise a new query.</p>  <p>Thank You,<br> Innomatics AI Query Routing System</p>  <hr> <p style=\"color:gray;font-size:12px;\"> This is an automated resolution confirmation generated by SQR-AI using n8n and GROQ LLM. </p>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1536,
+        -176
+      ],
+      "id": "32e8f07d-6fde-4162-9298-27de08ae9bc0",
+      "name": "LMS Resolution Confirmation",
+      "webhookId": "d00f1c4c-d1f8-4e4c-9d5b-13fa0b380eb5",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "skD4BvaR73UnzPjA",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "672952f8-6921-4395-9b61-977eabe58df4",
+              "name": "resolved_by",
+              "value": "accounts@innomatics.in",
+              "type": "string"
+            },
+            {
+              "id": "00876c46-b494-4f9a-890d-a2229b46a114",
+              "name": "Subject",
+              "value": "=Query Resolved - Payment Issue - {{$node[\"Google Sheets Trigger\"].json[\"Student Name\"]}}",
+              "type": "string"
+            },
+            {
+              "id": "974b02f1-622e-48a1-90e3-af3cb99ecb4d",
+              "name": "Category",
+              "value": "Payment Issue",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1328,
+        -48
+      ],
+      "id": "38543ddb-141e-480f-b1a2-2eb29d31acc1",
+      "name": "Payment Details"
+    },
+    {
+      "parameters": {
+        "sendTo": "{{$node[\"Google Sheets Trigger\"].json[\"Student Email\"]}}",
+        "subject": "=Query Resolved - Payment Issue - {{$node[\"Google Sheets Trigger\"].json[\"Student Name\"]}}",
+        "message": "=<p>Dear {{$node[\"Google Sheets Trigger\"].json[\"Student Name\"]}},</p>  <p>Your payment-related query has been successfully resolved by the Accounts Department.</p>  <hr>  <p> <b>Status:</b> RESOLVED<br> <b>Resolved By:</b> accounts@innomatics.in<br> <b>Resolved Time:</b> {{$now}}<br> <b>Category:</b> Payment Issue<br> <b>Priority:</b> {{$node[\"Urgency Detection LLM\"].json[\"text\"]}} </p>  <hr>  <p> <b>Your Original Query:</b><br> {{$node[\"Google Sheets Trigger\"].json[\"Query\"]}} </p>  <p> If your issue still persists, please reply to this email or raise another support request. </p>  <p> Thank You,<br> Accounts Support Team<br> Innomatics AI Query Routing System </p>  <hr>  <p style=\"color:gray;font-size:12px;\"> This is an automated AI-generated resolution confirmation powered by n8n + GROQ LLM. </p>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1536,
+        0
+      ],
+      "id": "a6817864-a9e3-4254-8ec3-ddc05966571a",
+      "name": "Payment Resolution confirmation",
+      "webhookId": "b11c39ea-b9f1-490c-baa9-a5f3d13887df",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "skD4BvaR73UnzPjA",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "37afd8d1-b75c-4556-8755-7f18efca2925",
+              "name": "resolved_by",
+              "value": "placement@innomatics.in",
+              "type": "string"
+            },
+            {
+              "id": "8242e52c-5748-4435-9c0f-27f3f78c21d8",
+              "name": "Subject",
+              "value": "=Query Resolved - Placement - {{$node[\"Google Sheets Trigger\"].json[\"Student Name\"]}}",
+              "type": "string"
+            },
+            {
+              "id": "927bca4f-cea1-48a6-a204-0dc34e5d8f96",
+              "name": "Category",
+              "value": "Placement",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1328,
+        112
+      ],
+      "id": "77d35dcb-f9f7-4cb5-8eae-545816e02fd1",
+      "name": "Placement Resolution Details"
+    },
+    {
+      "parameters": {
+        "sendTo": "faizansayeed97@gmail.com",
+        "subject": "=Query Resolved - Placement - {{$node[\"Google Sheets Trigger\"].json[\"Student Name\"]}}",
+        "message": "=<p>Dear {{$node[\"Google Sheets Trigger\"].json[\"Student Name\"]}},</p>  <p>Your placement-related query has been successfully resolved by the Placement Team.</p>  <hr>  <p> <b>Status:</b> RESOLVED<br> <b>Resolved By:</b> placement@innomatics.in<br> <b>Resolved Time:</b> {{$now}}<br> <b>Category:</b> Placement<br> <b>Priority:</b> {{$node[\"Urgency Detection LLM\"].json[\"text\"]}} </p>  <hr>  <p> <b>Your Original Query:</b><br> {{$node[\"Google Sheets Trigger\"].json[\"Query\"]}} </p>  <p>If your issue still persists, please reply to this email or raise another support request.</p>  <p> Thank You,<br> Placement Support Team<br> Innomatics AI Query Routing System </p>  <hr>  <p style=\"color:gray;font-size:12px;\"> This is an automated AI-generated resolution confirmation powered by n8n + GROQ LLM. </p>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1536,
+        176
+      ],
+      "id": "fcae35c9-c94f-4220-8e96-c1fc90010b91",
+      "name": "Placement Query Resolution confirmation",
+      "webhookId": "5d066c5a-a1a6-4965-9a5b-f41801e986d4",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "skD4BvaR73UnzPjA",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6dd175ee-2af7-44b8-a642-fef14479368b",
+              "name": "resolved_by",
+              "value": "faizansayeed97@gmail.com",
+              "type": "string"
+            },
+            {
+              "id": "93fc585d-4a9f-4d1a-9be9-a3800d3d39dc",
+              "name": "Subject",
+              "value": "=Query Resolved - Certification - {{$node[\"Google Sheets Trigger\"].json[\"Student Name\"]}}",
+              "type": "string"
+            },
+            {
+              "id": "bdfa17b0-aed2-494d-afb9-7f868f0b6b8f",
+              "name": "Category",
+              "value": " Certification",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1328,
+        304
+      ],
+      "id": "c57adc16-fa6b-4974-a00b-cd3c696b27cd",
+      "name": "Certification Enquiry Details"
+    },
+    {
+      "parameters": {
+        "sendTo": "faizansayeed97@gmail.com",
+        "subject": "=Query Resolved - Certification - {{$node[\"Google Sheets Trigger\"].json[\"Student Name\"]}}",
+        "message": "=<p>Dear {{$node[\"Google Sheets Trigger\"].json[\"Student Name\"]}},</p>  <p>Your certification-related query has been successfully resolved by the Admin Department.</p>  <hr>  <p> <b>Status:</b> RESOLVED<br> <b>Resolved By:</b> admin@innomatics.in<br> <b>Resolved Time:</b> {{$now}}<br> <b>Category:</b> Certification<br> <b>Priority:</b> {{$node[\"Urgency Detection LLM\"].json[\"text\"]}} </p>  <hr>  <p> <b>Your Original Query:</b><br> {{$node[\"Google Sheets Trigger\"].json[\"Query\"]}} </p>  <p>If your issue still persists, please reply to this email or raise another support request.</p>  <p> Thank You,<br> Admin Department<br> Innomatics AI Query Routing System </p>  <hr>  <p style=\"color:gray;font-size:12px;\"> This is an automated AI-generated resolution confirmation powered by n8n + GROQ LLM. </p>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1536,
+        384
+      ],
+      "id": "2ff43e5c-b7f3-4f90-85ca-6a5175cb4e77",
+      "name": "Certification Issued Confirmation Mail",
+      "webhookId": "5a6c64f5-9c37-4459-b96e-382848b67c90",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "skD4BvaR73UnzPjA",
+          "name": "Gmail account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "Urgency Detection LLM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Urgency Detection LLM",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Urgency Detection LLM": {
+      "main": [
+        [
+          {
+            "node": "Department classification LLM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Department classification LLM",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Department classification LLM": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "LMS Mail",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Payment Mail",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Placement Mail",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [],
+        [],
+        [],
+        [
+          {
+            "node": "Certification Mail",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Recordings Mail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LMS Mail": {
+      "main": [
+        [
+          {
+            "node": "LMS_Resolution_Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LMS_Resolution_Details": {
+      "main": [
+        [
+          {
+            "node": "LMS Resolution Confirmation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Payment Mail": {
+      "main": [
+        [
+          {
+            "node": "Payment Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Payment Details": {
+      "main": [
+        [
+          {
+            "node": "Payment Resolution confirmation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Placement Mail": {
+      "main": [
+        [
+          {
+            "node": "Placement Resolution Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Placement Resolution Details": {
+      "main": [
+        [
+          {
+            "node": "Placement Query Resolution confirmation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Certification Mail": {
+      "main": [
+        [
+          {
+            "node": "Certification Enquiry Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Certification Enquiry Details": {
+      "main": [
+        [
+          {
+            "node": "Certification Issued Confirmation Mail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "d8a212ed-84c3-4775-bd34-9fd688b5e742",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "a636c30064636a5063d012b9b13d8adc3313a4a45e8fd973d824f400400b7841"
+  },
+  "id": "LRhHuackjRXflL4I",
+  "tags": []
+}
